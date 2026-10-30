@@ -1,7 +1,7 @@
 // 실전: 사이드바 '실전 회차'(다같이, 진행자가 시작)와 주차 탭 '실전'(회차가 끝난 뒤 각자 복습).
 // 회차 상태·시간·제출 기록은 피드백 서버(/contest/*)에 있고, 화면은 4초마다 서버와 맞춘다.
-import { h, st, pad } from "./ui.js?v=44869038b3";
-import { problemView, statusPill } from "./practice.js?v=44869038b3";
+import { h, st, pad } from "./ui.js?v=4c0715580a";
+import { problemView, statusPill } from "./practice.js?v=4c0715580a";
 
 const POLL_MS = 4000;
 const LETTERS = "ABCDE";
