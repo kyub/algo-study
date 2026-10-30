@@ -1,6 +1,6 @@
 // 풀이 화면(편집기·실행·채점·AI 피드백)과 연습문제 목록. 실전 회차·실전 복습 화면도 problemView를 옵션만 바꿔 쓴다.
-import { h, st, sec } from "./ui.js?v=4c0715580a";
-import { grade, prepare, splitResult } from "./runner.js?v=4c0715580a";
+import { h, st, sec } from "./ui.js?v=dd47e9730c";
+import { grade, prepare, splitResult } from "./runner.js?v=dd47e9730c";
 
 const RUN_LIMIT = 10; // '실행' 버튼 한 번의 시간 제한(초)
 const STARTER = "# 여기에 풀이를 작성하세요. 입력은 input(), 출력은 print()를 씁니다.\n";
@@ -136,7 +136,14 @@ export function problemView(ctx, w, p, opts = {}) {
       value: initial, mode: "python", theme: "algo", lineNumbers: true, indentUnit: 4, tabSize: 4,
       indentWithTabs: false, matchBrackets: true,
       extraKeys: {
-        Tab: (c) => (c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection("    ", "end")),
+        // VS Code처럼: Tab은 다음 4칸 경계까지, 줄 앞 공백 안의 Backspace는 이전 4칸 경계까지 한 번에
+        Tab: (c) => (c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection(" ".repeat(4 - (c.getCursor().ch % 4)), "end")),
+        Backspace: (c) => {
+          if (c.somethingSelected() || c.listSelections().length > 1) return window.CodeMirror.Pass;
+          const { line, ch } = c.getCursor();
+          if (!ch || /[^ ]/.test(c.getLine(line).slice(0, ch))) return window.CodeMirror.Pass;
+          c.replaceRange("", { line, ch: ch - (ch % 4 || 4) }, { line, ch });
+        },
         "Shift-Tab": (c) => c.indentSelection("subtract"),
         "Ctrl-Enter": () => run(), "Cmd-Enter": () => run(),
         "Shift-Ctrl-Enter": () => submit(), "Shift-Cmd-Enter": () => submit(),

@@ -1,10 +1,10 @@
 // 알고리즘 스터디 사이트 (GitHub Pages, 서버 없음).
 // 공개되는 것은 이 화면 틀뿐이고, 내용은 data/의 암호화 묶음을 비밀번호로 풀어서 보여 준다.
-import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=4c0715580a";
-import { h, st, pad, mb } from "./ui.js?v=4c0715580a";
-import { Runner } from "./runner.js?v=4c0715580a";
-import { practiceList, problemView } from "./practice.js?v=4c0715580a";
-import { contestPage, reviewList, reviewProblem, refresh, live, sidebarLabel } from "./contest.js?v=4c0715580a";
+import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=dd47e9730c";
+import { h, st, pad, mb } from "./ui.js?v=dd47e9730c";
+import { Runner } from "./runner.js?v=dd47e9730c";
+import { practiceList, problemView } from "./practice.js?v=dd47e9730c";
+import { contestPage, reviewList, reviewProblem, refresh, live, sidebarLabel } from "./contest.js?v=dd47e9730c";
 
 const BUILD = document.body.dataset.build;
 const app = document.getElementById("app");
