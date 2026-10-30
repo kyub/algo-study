@@ -70,10 +70,37 @@ export class Runner {
   }
 }
 
+// 함수형 문제(프로그래머스, kind "function"): 입력은 인자 JSON 배열, solution(*인자)의 반환값을 JSON으로 비교
+const MARK = "\n__RESULT__";
+const DRIVER = [
+  "",
+  "import json as _j, sys as _s",
+  "_a = _j.loads(_s.stdin.read())",
+  "_r = solution(*_a)",
+  'print("\\n__RESULT__" + _j.dumps(_r, ensure_ascii=False))',
+  "",
+].join("\n");
+const canon = (s) => { try { return JSON.stringify(JSON.parse(s)); } catch { return null; } };
+
+// 함수형이면 스터디원 코드 뒤에 호출 코드를 붙임 (스터디원 코드의 줄 번호는 그대로)
+export const prepare = (p, code) => (p.kind === "function" ? code.trimEnd() + "\n" + DRIVER : code);
+
+// 출력을 print로 찍은 부분과 반환값(JSON)으로 나눔
+export function splitResult(out) {
+  const i = out.lastIndexOf(MARK);
+  return i < 0 ? { printed: out, result: null } : { printed: out.slice(0, i), result: out.slice(i + MARK.length).trim() };
+}
+
+export function judge(p, out, expected) {
+  if (p.kind !== "function") return normalize(out) === normalize(expected);
+  const { result } = splitResult(out);
+  return result !== null && canon(result) === canon(expected);
+}
+
 // 채점: tests = [{input, output}], 첫 실패에서도 나머지는 계속 (시간 초과면 중단)
-export async function grade(runner, code, tests, limit, onCase) {
-  const results = await runner.exec(code, tests.map((t) => t.input), limit, (r) => {
-    if (r.status === "ok") r.status = normalize(r.out) === normalize(tests[r.i].output) ? "pass" : "wrong";
+export async function grade(runner, code, tests, limit, onCase, p = {}) {
+  const results = await runner.exec(prepare(p, code), tests.map((t) => t.input), limit, (r) => {
+    if (r.status === "ok") r.status = judge(p, r.out, tests[r.i].output) ? "pass" : "wrong";
     onCase?.(r);
   });
   const passed = results.filter((r) => r.status === "pass").length;

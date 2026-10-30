@@ -1,9 +1,10 @@
 // 알고리즘 스터디 사이트 (GitHub Pages, 서버 없음).
 // 공개되는 것은 이 화면 틀뿐이고, 내용은 data/의 암호화 묶음을 비밀번호로 풀어서 보여 준다.
-import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=65d0ba1b42";
-import { h, st, pad, mb } from "./ui.js?v=65d0ba1b42";
-import { Runner } from "./runner.js?v=65d0ba1b42";
-import { practiceList, problemView } from "./practice.js?v=65d0ba1b42";
+import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=44869038b3";
+import { h, st, pad, mb } from "./ui.js?v=44869038b3";
+import { Runner } from "./runner.js?v=44869038b3";
+import { practiceList, problemView } from "./practice.js?v=44869038b3";
+import { contestPage, reviewList, reviewProblem, refresh, live, sidebarLabel } from "./contest.js?v=44869038b3";
 
 const BUILD = document.body.dataset.build;
 const app = document.getElementById("app");
@@ -21,7 +22,15 @@ function loadTests(p) {
   }
   return S.tests.get(p.id);
 }
-const practiceCtx = () => ({ me: st.get(MEMBER), runner, loadTests, ai: S.m.ai });
+const practiceCtx = () => ({
+  me: st.get(MEMBER), members: S.m.members, runner, loadTests, ai: S.m.ai,
+  week, viewId: () => S.view, rerender: () => route(),
+});
+// 사이드바 '실전 회차' 옆 상태 표시는 서버 상태를 받을 때마다 갱신
+live.listeners.add((snap) => {
+  const pill = document.getElementById("contest-pill");
+  if (pill) pill.textContent = sidebarLabel(snap);
+});
 
 // 같은 파일은 한 번만 풀어서 다시 씀
 function blobUrl(f, type) {
@@ -74,6 +83,7 @@ function logout() {
   for (const p of S.urls.values()) p.then(URL.revokeObjectURL, () => {});
   S.urls.clear();
   S.tests.clear();
+  live.snap = null;
   S.key = S.m = null;
   location.hash = "";
   route();
@@ -86,9 +96,14 @@ function route() {
   if (!S.m) return viewLogin();
   const me = st.get(MEMBER);
   if (!me || !S.m.members.includes(me)) return viewWho();
+  if (!live.snap && S.m.ai?.worker_url) refresh(practiceCtx()).catch(() => {}); // 사이드바 상태용, 실패해도 무시
   const [page, a, b, c] = location.hash.replace(/^#\/?/, "").split("/");
   if (page === "week" && week(Number(a))) return shell(viewWeek(week(Number(a)), b || "slides", c), Number(a));
-  if (page === "contest") return shell(viewContest(), "contest");
+  if (page === "contest") {
+    document.title = "실전 회차 · 알고리즘 스터디";
+    const n = week(Number(a)) ? Number(a) : null;
+    return shell(contestPage(practiceCtx(), n, n ? b : undefined), "contest");
+  }
   shell(viewHome(), "home");
 }
 
@@ -156,7 +171,8 @@ function shell(content, active) {
       w.n === S.m.current_week ? h("span", { class: "dot", title: "이번 주" }) : null)),
     h("div", { class: "sep" }),
     h("h4", {}, "실전"),
-    h("a", { href: "#/contest", class: active === "contest" ? "active" : null }, "실전 회차", h("span", { class: "pill gray" }, "준비 중")));
+    h("a", { href: "#/contest", class: active === "contest" ? "active" : null }, "실전 회차",
+      h("span", { class: "pill gray", id: "contest-pill" }, sidebarLabel(live.snap))));
   side.addEventListener("click", (e) => { if (e.target.closest("a")) side.classList.remove("open"); });
   const drop = h("div", { class: "dropdown" },
     h("button", { type: "button", onclick: () => { st.del(MEMBER); route(); } }, "다른 이름으로 바꾸기"),
@@ -201,10 +217,13 @@ function viewWeek(w, tab, pid) {
   document.title = `${w.n}주차 ${w.title} · 알고리즘 스터디`;
   const tabs = [["slides", "강의자료"], ["practice", "연습문제"], ["contest", "실전"]];
   const problem = tab === "practice" && (w.practice || []).find((p) => p.id === pid);
-  if (problem) document.title = `${problem.title} · ${w.n}주차 · 알고리즘 스터디`;
-  const body = problem ? problemView(practiceCtx(), w, problem)
-    : tab === "practice" ? practiceList(practiceCtx(), w) : tab === "contest" ? contestTab() : slidesTab(w);
-  return h("div", { class: problem ? "wrap wide" : "wrap" },
+  const review = tab === "contest" && (w.contest || []).find((p) => p.id === pid);
+  if (problem || review) document.title = `${(problem || review).title} · ${w.n}주차 · 알고리즘 스터디`;
+  const ctx = practiceCtx();
+  const body = problem ? problemView(ctx, w, problem)
+    : review ? reviewProblem(ctx, w, review)
+      : tab === "practice" ? practiceList(ctx, w) : tab === "contest" ? reviewList(ctx, w) : slidesTab(w);
+  return h("div", { class: problem || review ? "wrap wide" : "wrap" },
     h("div", { class: "head" }, h("span", { class: "badge" }, pad(w.n)),
       h("div", {}, h("h1", {}, w.title), h("div", { class: "muted small" }, w.chapters))),
     h("nav", { class: "tabs" }, tabs.map(([k, label]) =>
@@ -294,18 +313,6 @@ function downloadButton(f, label) {
     }
   });
   return btn;
-}
-
-function contestTab() {
-  return h("div", { class: "card soft" }, h("h3", {}, "실전 문제 준비 중"),
-    h("p", { class: "muted" },
-      "실전은 3명이 함께 시작하고, 제한 시간이 끝나면 결과표·서로의 코드·AI 피드백을 공개합니다. ",
-      "교재 기출 문제를 정리하면 열립니다."));
-}
-
-function viewContest() {
-  document.title = "실전 · 알고리즘 스터디";
-  return h("div", { class: "wrap" }, h("div", { class: "head" }, h("h1", {}, "실전 회차")), contestTab());
 }
 
 boot();
