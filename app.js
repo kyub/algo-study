@@ -1,45 +1,27 @@
 // 알고리즘 스터디 사이트 (GitHub Pages, 서버 없음).
 // 공개되는 것은 이 화면 틀뿐이고, 내용은 data/의 암호화 묶음을 비밀번호로 풀어서 보여 준다.
-import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=4170285632";
+import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=65d0ba1b42";
+import { h, st, pad, mb } from "./ui.js?v=65d0ba1b42";
+import { Runner } from "./runner.js?v=65d0ba1b42";
+import { practiceList, problemView } from "./practice.js?v=65d0ba1b42";
 
 const BUILD = document.body.dataset.build;
 const app = document.getElementById("app");
 const KEY = "algo.key";
 const MEMBER = "algo.member";
-const S = { meta: null, key: null, m: null, view: 0, onKey: null, urls: new Map() };
-
-// ---------- 저장소 (사생활 보호 모드 등에서 실패해도 동작하게) ----------
-const st = {
-  get(k) {
-    try { return localStorage.getItem(k) ?? sessionStorage.getItem(k); } catch { return null; }
-  },
-  set(k, v, remember = true) {
-    try { (remember ? localStorage : sessionStorage).setItem(k, v); } catch { /* 저장 못 해도 이번 화면은 사용 가능 */ }
-  },
-  del(k) {
-    try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch { /* 무시 */ }
-  },
-};
-
-// ---------- 요소 만들기 (내용은 항상 textContent로 넣음) ----------
-function h(tag, attrs = {}, ...kids) {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (v == null || v === false) continue;
-    if (k === "class") el.className = v;
-    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
-    else if (k === "checked") el.checked = v;
-    else el.setAttribute(k, v === true ? "" : v);
-  }
-  for (const c of kids.flat()) {
-    if (c == null || c === false) continue;
-    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
-  }
-  return el;
-}
-const pad = (n) => String(n).padStart(2, "0");
+const S = { meta: null, key: null, m: null, view: 0, onKey: null, urls: new Map(), tests: new Map() };
+const runner = new Runner(`pyworker.js?v=${BUILD}`);
 const week = (n) => S.m.weeks.find((w) => w.n === n);
-const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+
+// 채점 테스트는 문제마다 따로 암호화되어 있고, 처음 제출할 때 한 번만 풀어 둔다
+function loadTests(p) {
+  if (!S.tests.has(p.id)) {
+    S.tests.set(p.id, fetchBlob(S.key, p.tests.id, "application/json").then((b) => b.text()).then(JSON.parse)
+      .catch((e) => { S.tests.delete(p.id); throw e; }));
+  }
+  return S.tests.get(p.id);
+}
+const practiceCtx = () => ({ me: st.get(MEMBER), runner, loadTests, ai: S.m.ai });
 
 // 같은 파일은 한 번만 풀어서 다시 씀
 function blobUrl(f, type) {
@@ -91,6 +73,7 @@ function logout() {
   st.del(MEMBER);
   for (const p of S.urls.values()) p.then(URL.revokeObjectURL, () => {});
   S.urls.clear();
+  S.tests.clear();
   S.key = S.m = null;
   location.hash = "";
   route();
@@ -103,8 +86,8 @@ function route() {
   if (!S.m) return viewLogin();
   const me = st.get(MEMBER);
   if (!me || !S.m.members.includes(me)) return viewWho();
-  const [page, a, b] = location.hash.replace(/^#\/?/, "").split("/");
-  if (page === "week" && week(Number(a))) return shell(viewWeek(week(Number(a)), b || "slides"), Number(a));
+  const [page, a, b, c] = location.hash.replace(/^#\/?/, "").split("/");
+  if (page === "week" && week(Number(a))) return shell(viewWeek(week(Number(a)), b || "slides", c), Number(a));
   if (page === "contest") return shell(viewContest(), "contest");
   shell(viewHome(), "home");
 }
@@ -214,11 +197,14 @@ function viewHome() {
 }
 
 // ---------- 주차 ----------
-function viewWeek(w, tab) {
+function viewWeek(w, tab, pid) {
   document.title = `${w.n}주차 ${w.title} · 알고리즘 스터디`;
   const tabs = [["slides", "강의자료"], ["practice", "연습문제"], ["contest", "실전"]];
-  const body = tab === "practice" ? practiceTab(w) : tab === "contest" ? contestTab() : slidesTab(w);
-  return h("div", { class: "wrap" },
+  const problem = tab === "practice" && (w.practice || []).find((p) => p.id === pid);
+  if (problem) document.title = `${problem.title} · ${w.n}주차 · 알고리즘 스터디`;
+  const body = problem ? problemView(practiceCtx(), w, problem)
+    : tab === "practice" ? practiceList(practiceCtx(), w) : tab === "contest" ? contestTab() : slidesTab(w);
+  return h("div", { class: problem ? "wrap wide" : "wrap" },
     h("div", { class: "head" }, h("span", { class: "badge" }, pad(w.n)),
       h("div", {}, h("h1", {}, w.title), h("div", { class: "muted small" }, w.chapters))),
     h("nav", { class: "tabs" }, tabs.map(([k, label]) =>
@@ -308,19 +294,6 @@ function downloadButton(f, label) {
     }
   });
   return btn;
-}
-
-function practiceTab(w) {
-  const items = w.practice || [];
-  return h("div", { class: "stack" },
-    h("div", { class: "keypoint" },
-      h("strong", {}, "연습문제는 다음 단계에서 열립니다. "),
-      "브라우저에서 Python을 실행하고, 제출하면 채점과 AI 피드백이 바로 나옵니다."),
-    items.length
-      ? h("div", { class: "plist" }, items.map((p, k) => h("div", { class: "item" },
-        h("span", { class: "badge sm ghost" }, k + 1), h("span", { class: "t" }, p.title),
-        h("span", { class: "pill" }, p.tag), h("span", { class: "pill gray" }, "준비 중"))))
-      : h("p", { class: "muted" }, "이 주차의 연습문제는 강의자료와 함께 정리됩니다."));
 }
 
 function contestTab() {

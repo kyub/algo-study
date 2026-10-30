@@ -1,0 +1,2 @@
+CodeMirror 5.65.20 (MIT) — https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/
+파일: codemirror.min.js, codemirror.min.css, python.min.js(mode/python), matchbrackets.min.js(addon/edit)
