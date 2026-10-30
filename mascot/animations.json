@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "selectedConcept": "15_tucked_feet",
+  "identityImage": "identity.png",
+  "identityFrame": {
+    "sx": 319,
+    "sy": 307,
+    "sw": 616,
+    "sh": 699,
+    "anchorX": 627.0
+  },
+  "states": [
+    {
+      "id": "01_squirm",
+      "name": "꼬물꼬물 이동",
+      "short": "이동",
+      "duration": 900,
+      "sheet": "01_squirm_sheet.png",
+      "imageSize": [
+        1254,
+        1254
+      ],
+      "frames": [
+        {
+          "sx": 124,
+          "sy": 116,
+          "sw": 429,
+          "sh": 479,
+          "anchorX": 339.0
+        },
+        {
+          "sx": 708,
+          "sy": 125,
+          "sw": 433,
+          "sh": 477,
+          "anchorX": 923.5
+        },
+        {
+          "sx": 121,
+          "sy": 692,
+          "sw": 437,
+          "sh": 480,
+          "anchorX": 339.0
+        },
+        {
+          "sx": 700,
+          "sy": 696,
+          "sw": 440,
+          "sh": 477,
+          "anchorX": 922.0
+        }
+      ],
+      "referenceHeight": 478.0
+    },
+    {
+      "id": "02_jump",
+      "name": "작은 점프",
+      "short": "점프",
+      "duration": 1600,
+      "sheet": "02_jump_sheet.png",
+      "imageSize": [
+        1254,
+        1254
+      ],
+      "frames": [
+        {
+          "sx": 138,
+          "sy": 216,
+          "sw": 414,
+          "sh": 392,
+          "anchorX": 349.5
+        },
+        {
+          "sx": 714,
+          "sy": 147,
+          "sw": 393,
+          "sh": 460,
+          "anchorX": 909.5
+        },
+        {
+          "sx": 138,
+          "sy": 705,
+          "sw": 413,
+          "sh": 398,
+          "anchorX": 347.5
+        },
+        {
+          "sx": 698,
+          "sy": 785,
+          "sw": 432,
+          "sh": 379,
+          "anchorX": 912.0
+        }
+      ],
+      "referenceHeight": 395.0
+    },
+    {
+      "id": "03_sleepy",
+      "name": "꾸벅꾸벅 졸기",
+      "short": "졸기",
+      "duration": 3200,
+      "sheet": "03_sleepy_sheet.png",
+      "imageSize": [
+        1254,
+        1254
+      ],
+      "frames": [
+        {
+          "sx": 111,
+          "sy": 107,
+          "sw": 442,
+          "sh": 490,
+          "anchorX": 332.0
+        },
+        {
+          "sx": 705,
+          "sy": 143,
+          "sw": 444,
+          "sh": 456,
+          "anchorX": 924.0
+        },
+        {
+          "sx": 106,
+          "sy": 765,
+          "sw": 442,
+          "sh": 432,
+          "anchorX": 332.0
+        },
+        {
+          "sx": 704,
+          "sy": 709,
+          "sw": 449,
+          "sh": 490,
+          "anchorX": 924.0
+        }
+      ],
+      "referenceHeight": 473.0
+    },
+    {
+      "id": "04_talk",
+      "name": "촉수를 들고 말하기",
+      "short": "말하기",
+      "duration": 1100,
+      "sheet": "04_talk_sheet.png",
+      "imageSize": [
+        1254,
+        1254
+      ],
+      "frames": [
+        {
+          "sx": 138,
+          "sy": 124,
+          "sw": 371,
+          "sh": 440,
+          "anchorX": 323.5
+        },
+        {
+          "sx": 740,
+          "sy": 124,
+          "sw": 377,
+          "sh": 443,
+          "anchorX": 932.0
+        },
+        {
+          "sx": 124,
+          "sy": 713,
+          "sw": 398,
+          "sh": 447,
+          "anchorX": 335.0
+        },
+        {
+          "sx": 739,
+          "sy": 713,
+          "sw": 381,
+          "sh": 439,
+          "anchorX": 934.5
+        }
+      ],
+      "referenceHeight": 441.5
+    },
+    {
+      "id": "05_grabbed",
+      "name": "잡혀서 바둥거리기",
+      "short": "잡힘",
+      "duration": 720,
+      "sheet": "05_grabbed_sheet.png",
+      "imageSize": [
+        1254,
+        1254
+      ],
+      "frames": [
+        {
+          "sx": 108,
+          "sy": 130,
+          "sw": 416,
+          "sh": 449,
+          "anchorX": 315.5
+        },
+        {
+          "sx": 733,
+          "sy": 129,
+          "sw": 392,
+          "sh": 472,
+          "anchorX": 935.0
+        },
+        {
+          "sx": 108,
+          "sy": 695,
+          "sw": 405,
+          "sh": 453,
+          "anchorX": 316.0
+        },
+        {
+          "sx": 749,
+          "sy": 695,
+          "sw": 405,
+          "sh": 473,
+          "anchorX": 939.0
+        }
+      ],
+      "referenceHeight": 462.5
+    }
+  ]
+}

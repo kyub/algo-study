@@ -1,10 +1,11 @@
 // 알고리즘 스터디 사이트 (GitHub Pages, 서버 없음).
 // 공개되는 것은 이 화면 틀뿐이고, 내용은 data/의 암호화 묶음을 비밀번호로 풀어서 보여 준다.
-import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=dd47e9730c";
-import { h, st, pad, mb } from "./ui.js?v=dd47e9730c";
-import { Runner } from "./runner.js?v=dd47e9730c";
-import { practiceList, problemView } from "./practice.js?v=dd47e9730c";
-import { contestPage, reviewList, reviewProblem, refresh, live, sidebarLabel } from "./contest.js?v=dd47e9730c";
+import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=b28e45d96f";
+import { h, st, pad, mb } from "./ui.js?v=b28e45d96f";
+import { Runner } from "./runner.js?v=b28e45d96f";
+import { practiceList, problemView } from "./practice.js?v=b28e45d96f";
+import { contestPage, reviewList, reviewProblem, refresh, live, sidebarLabel } from "./contest.js?v=b28e45d96f";
+import { PET_NAME, petOn, petScreen, setPet } from "./mascot.js?v=b28e45d96f";
 
 const BUILD = document.body.dataset.build;
 const app = document.getElementById("app");
@@ -93,17 +94,29 @@ function logout() {
 function route() {
   S.view += 1;
   S.onKey = null;
-  if (!S.m) return viewLogin();
+  if (!S.m) {
+    petScreen(null);
+    return viewLogin();
+  }
   const me = st.get(MEMBER);
-  if (!me || !S.m.members.includes(me)) return viewWho();
+  if (!me || !S.m.members.includes(me)) {
+    petScreen(null);
+    return viewWho();
+  }
   if (!live.snap && S.m.ai?.worker_url) refresh(practiceCtx()).catch(() => {}); // 사이드바 상태용, 실패해도 무시
   const [page, a, b, c] = location.hash.replace(/^#\/?/, "").split("/");
-  if (page === "week" && week(Number(a))) return shell(viewWeek(week(Number(a)), b || "slides", c), Number(a));
+  const pet = { ai: S.m.ai, me }; // 마스코트 대화용 서버 주소와 내 이름
+  if (page === "week" && week(Number(a))) {
+    petScreen(b === "practice" || b === "contest" ? "work" : null, pet); // 강의자료(슬라이드)에서는 숨김
+    return shell(viewWeek(week(Number(a)), b || "slides", c), Number(a));
+  }
   if (page === "contest") {
     document.title = "실전 회차 · 알고리즘 스터디";
     const n = week(Number(a)) ? Number(a) : null;
+    petScreen("work", pet);
     return shell(contestPage(practiceCtx(), n, n ? b : undefined), "contest");
   }
+  petScreen("home", pet);
   shell(viewHome(), "home");
 }
 
@@ -174,8 +187,14 @@ function shell(content, active) {
     h("a", { href: "#/contest", class: active === "contest" ? "active" : null }, "실전 회차",
       h("span", { class: "pill gray", id: "contest-pill" }, sidebarLabel(live.snap))));
   side.addEventListener("click", (e) => { if (e.target.closest("a")) side.classList.remove("open"); });
+  const petLabel = () => `${PET_NAME} ${petOn() ? "숨기기" : "보이기"}`;
+  const petBtn = h("button", {
+    type: "button",
+    onclick: () => { setPet(!petOn()); petBtn.textContent = petLabel(); drop.classList.remove("open"); },
+  }, petLabel());
   const drop = h("div", { class: "dropdown" },
     h("button", { type: "button", onclick: () => { st.del(MEMBER); route(); } }, "다른 이름으로 바꾸기"),
+    petBtn,
     h("button", { type: "button", onclick: logout }, "로그아웃"));
   const top = h("header", { class: "top" },
     h("button", { class: "btn icon menu-btn", type: "button", "aria-label": "메뉴", onclick: () => side.classList.toggle("open") }, "☰"),

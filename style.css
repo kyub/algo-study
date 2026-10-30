@@ -299,6 +299,79 @@ pre.code { margin: 4px 0 0; padding: 10px 12px; min-height: 60px; max-height: 42
 .cm-s-algo .cm-meta { color: #F6A25E; }
 .cm-s-algo .CodeMirror-matchingbracket { color: #FFE56B !important; text-decoration: underline; }
 
+/* 마스코트 문어 (mascot.js): 화면 아래에 떠 있고, 문어 몸 부분만 누를 수 있음 */
+.pet { position: fixed; left: 0; bottom: 6px; width: 96px; height: 100px; z-index: 8; pointer-events: none; }
+.pet[hidden] { display: none; }
+.pet-art { display: block; width: 96px; height: 100px; }
+.pet-hit {
+  position: absolute; left: 16px; top: 26px; width: 64px; height: 72px; border-radius: 45% 45% 30% 30%;
+  pointer-events: auto; cursor: grab; touch-action: none;
+}
+.pet-hit:focus-visible { outline: 2px dashed var(--blue); outline-offset: 2px; }
+.pet[data-mode=grab] .pet-hit { cursor: grabbing; }
+.pet-bubble {
+  position: absolute; left: 62px; bottom: 74px; width: max-content; max-width: 260px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px 12px 12px 3px; padding: 7px 12px;
+  color: var(--navy); font-size: 13.5px; font-weight: 500; line-height: 1.45;
+  box-shadow: 0 6px 18px rgba(20, 37, 74, .12);
+  opacity: 0; transform: translateY(4px); transition: opacity .18s, transform .18s;
+}
+.pet.flip .pet-bubble { left: auto; right: 62px; border-radius: 12px 12px 3px 12px; }
+.pet.talking .pet-bubble { opacity: 1; transform: none; }
+.pet.chatting .pet-bubble { display: none; }
+.pet-chat {
+  position: absolute; left: 62px; bottom: 74px; width: 280px; display: none; pointer-events: auto;
+  background: #fff; border: 1px solid var(--line); border-radius: 14px 14px 14px 3px; padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(20, 37, 74, .14); color: var(--navy); font-size: 13.5px; line-height: 1.5;
+}
+.pet.chatting .pet-chat { display: block; }
+.pet.flip .pet-chat { left: auto; right: 62px; border-radius: 14px 14px 3px 14px; }
+.pet-close {
+  position: absolute; top: 3px; right: 5px; border: 0; background: none; padding: 3px 6px;
+  color: var(--muted); font-size: 17px; line-height: 1; cursor: pointer;
+}
+.pet-close:hover { color: var(--navy); }
+.pet-asked { margin: 0 20px 3px 0; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.pet-asked:empty { display: none; }
+.pet-answer { margin: 0 20px 9px 0; min-height: 20px; font-weight: 500; word-break: keep-all; overflow-wrap: anywhere; }
+.pet-answer code {
+  background: var(--card); border: 1px solid var(--card-line); border-radius: 5px; padding: 0 4px;
+  font-family: Consolas, "D2Coding", monospace; font-size: 12.5px;
+}
+.pet-row { display: flex; gap: 6px; }
+.pet-row input {
+  flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 9px; padding: 6px 9px;
+  background: #fff; font-size: 13px;
+}
+.pet-row input:focus { outline: 2px solid var(--pill); border-color: var(--blue); }
+.pet-send {
+  border: 0; border-radius: 9px; padding: 0 11px; background: var(--blue); color: #fff;
+  font-size: 12.5px; font-weight: 500; cursor: pointer;
+}
+.pet-send:disabled { opacity: .5; cursor: default; }
+.pet-dots i {
+  display: inline-block; width: 5px; height: 5px; margin-right: 4px; border-radius: 50%;
+  background: #8C7BC0; animation: pet-dot 1s ease-in-out infinite;
+}
+.pet-dots i:nth-child(2) { animation-delay: .15s; }
+.pet-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes pet-dot {
+  0%, 60%, 100% { opacity: .35; transform: none; }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+.pet-zz { position: absolute; left: 72px; top: 8px; color: #8C7BC0; font-size: 12px; font-weight: 700; opacity: 0; }
+.pet.sleeping .pet-zz { animation: pet-zz 2.4s ease-in-out infinite; }
+@keyframes pet-zz {
+  0% { opacity: 0; transform: translate(0, 6px); }
+  30%, 70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(6px, -8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pet.sleeping .pet-zz { animation: none; opacity: 1; }
+  .pet-bubble { transition: none; }
+  .pet-dots i { animation: none; opacity: .7; }
+}
+
 @media (max-width: 1100px) {
   .solve { grid-template-columns: 1fr; }
 }

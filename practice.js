@@ -1,6 +1,6 @@
 // 풀이 화면(편집기·실행·채점·AI 피드백)과 연습문제 목록. 실전 회차·실전 복습 화면도 problemView를 옵션만 바꿔 쓴다.
-import { h, st, sec } from "./ui.js?v=dd47e9730c";
-import { grade, prepare, splitResult } from "./runner.js?v=dd47e9730c";
+import { h, st, sec } from "./ui.js?v=b28e45d96f";
+import { grade, prepare, splitResult } from "./runner.js?v=b28e45d96f";
 
 const RUN_LIMIT = 10; // '실행' 버튼 한 번의 시간 제한(초)
 const STARTER = "# 여기에 풀이를 작성하세요. 입력은 input(), 출력은 print()를 씁니다.\n";
@@ -255,6 +255,7 @@ export function problemView(ctx, w, p, opts = {}) {
     state[p.id] = { ...prevState, tried: true, solved: prevState.solved || ok, bestPassed, best: `${bestPassed}/${res.total}`, at: Date.now() };
     st.set(stateKey, JSON.stringify(state));
     setBusy(false);
+    dispatchEvent(new CustomEvent("algo:graded", { detail: { passed: res.passed, total: res.total } })); // 마스코트 반응
     await opts.onGraded?.(res, code, head);
     if (feedbackOn === true) feedback(code, summarize(p, tests, res));
   }
