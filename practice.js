@@ -1,6 +1,6 @@
 // 풀이 화면(편집기·실행·채점·AI 피드백)과 연습문제 목록. 실전 회차·실전 복습 화면도 problemView를 옵션만 바꿔 쓴다.
-import { h, st, sec } from "./ui.js?v=b28e45d96f";
-import { grade, prepare, splitResult } from "./runner.js?v=b28e45d96f";
+import { h, st, sec } from "./ui.js?v=de51c78c31";
+import { grade, prepare, splitResult } from "./runner.js?v=de51c78c31";
 
 const RUN_LIMIT = 10; // '실행' 버튼 한 번의 시간 제한(초)
 const STARTER = "# 여기에 풀이를 작성하세요. 입력은 input(), 출력은 print()를 씁니다.\n";

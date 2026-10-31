@@ -1,11 +1,11 @@
 // 알고리즘 스터디 사이트 (GitHub Pages, 서버 없음).
 // 공개되는 것은 이 화면 틀뿐이고, 내용은 data/의 암호화 묶음을 비밀번호로 풀어서 보여 준다.
-import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=b28e45d96f";
-import { h, st, pad, mb } from "./ui.js?v=b28e45d96f";
-import { Runner } from "./runner.js?v=b28e45d96f";
-import { practiceList, problemView } from "./practice.js?v=b28e45d96f";
-import { contestPage, reviewList, reviewProblem, refresh, live, sidebarLabel } from "./contest.js?v=b28e45d96f";
-import { PET_NAME, petOn, petScreen, setPet } from "./mascot.js?v=b28e45d96f";
+import { loadMeta, deriveRawKey, openVault, fetchBlob, b64decode, b64encode } from "./vault.js?v=de51c78c31";
+import { h, st, pad, mb } from "./ui.js?v=de51c78c31";
+import { Runner } from "./runner.js?v=de51c78c31";
+import { practiceList, problemView } from "./practice.js?v=de51c78c31";
+import { contestPage, reviewList, reviewProblem, refresh, live, sidebarLabel } from "./contest.js?v=de51c78c31";
+import { PET_NAME, petOn, petScreen, setPet } from "./mascot.js?v=de51c78c31";
 
 const BUILD = document.body.dataset.build;
 const app = document.getElementById("app");
@@ -107,7 +107,7 @@ function route() {
   const [page, a, b, c] = location.hash.replace(/^#\/?/, "").split("/");
   const pet = { ai: S.m.ai, me }; // 마스코트 대화용 서버 주소와 내 이름
   if (page === "week" && week(Number(a))) {
-    petScreen(b === "practice" || b === "contest" ? "work" : null, pet); // 강의자료(슬라이드)에서는 숨김
+    petScreen("work", pet); // 강의자료·문제 화면 모두 본문을 가리지 않게 왼쪽 메뉴 아래에서
     return shell(viewWeek(week(Number(a)), b || "slides", c), Number(a));
   }
   if (page === "contest") {
